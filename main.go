@@ -15,6 +15,13 @@ import (
 var Static embed.FS
 
 func main() {
+	defer func() {
+		if r := recover(); r != nil {
+			core.PrintErr(fmt.Sprintf("\n💥 程序运行异常崩溃: %v", r))
+			core.PauseOnExit()
+		}
+	}()
+
 	portFlag := flag.String("port", "8088", "HTTP 服务监听端口")
 	noBrowserFlag := flag.Bool("no-browser", false, "是否禁用自动打开浏览器")
 	flag.Parse()
@@ -58,5 +65,6 @@ func main() {
 
 	if err := r.Run(":" + *portFlag); err != nil {
 		core.PrintErr(fmt.Sprintf("❌ 服务启动失败: %v", err))
+		core.PauseOnExit()
 	}
 }

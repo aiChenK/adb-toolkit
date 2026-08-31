@@ -4,6 +4,7 @@ APP_NAME := adb-toolkit
 BIN_DIR := bin
 WEB_DIR := web
 LDFLAGS := -s -w
+WINDOWS_LDFLAGS ?= 
 
 # 支持传入版本号参数，例如: make build-all VERSION=v1.0.0 或 make build-all V=v1.0.0
 VERSION ?= $(V)
@@ -66,7 +67,7 @@ build-linux: build-web ## 交叉编译 Linux (amd64)
 build-windows: build-web ## 交叉编译 Windows (amd64)
 	@echo "🪟 交叉编译 Windows (amd64)..."
 	@mkdir -p $(BIN_DIR)
-	@CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -trimpath -ldflags="$(LDFLAGS)" -o $(BIN_DIR)/$(BIN_PREFIX)-windows-amd64.exe .
+	@CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -trimpath $(if $(WINDOWS_LDFLAGS),-ldflags="$(WINDOWS_LDFLAGS)",) -o $(BIN_DIR)/$(BIN_PREFIX)-windows-amd64.exe .
 
 build-all: build-web ## 一键交叉编译多平台版本
 	@echo "🚀 开始全平台交叉编译..."
@@ -74,7 +75,7 @@ build-all: build-web ## 一键交叉编译多平台版本
 	@CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 go build -trimpath -ldflags="$(LDFLAGS)" -o $(BIN_DIR)/$(BIN_PREFIX)-darwin-arm64 .
 	@CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build -trimpath -ldflags="$(LDFLAGS)" -o $(BIN_DIR)/$(BIN_PREFIX)-darwin-amd64 .
 	@CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -ldflags="$(LDFLAGS)" -o $(BIN_DIR)/$(BIN_PREFIX)-linux-amd64 .
-	@CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -trimpath -ldflags="$(LDFLAGS)" -o $(BIN_DIR)/$(BIN_PREFIX)-windows-amd64.exe .
+	@CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -trimpath $(if $(WINDOWS_LDFLAGS),-ldflags="$(WINDOWS_LDFLAGS)",) -o $(BIN_DIR)/$(BIN_PREFIX)-windows-amd64.exe .
 	@echo "🎉 全平台构建成功！产物位于 $(BIN_DIR)/"
 
 dev: ## 同时启动前后端开发服务

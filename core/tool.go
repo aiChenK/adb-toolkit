@@ -3,6 +3,7 @@ package core
 import (
 	"fmt"
 	"net"
+	"os"
 	"os/exec"
 	"runtime"
 	"strings"
@@ -145,3 +146,14 @@ func OpenBrowser(url string) {
 
 	_ = cmd.Start()
 }
+
+// PauseOnExit 在 Windows 环境下等待用户按回车后再退出，避免双击运行时控制台窗口闪退
+func PauseOnExit() {
+	if runtime.GOOS == "windows" {
+		fmt.Println("\n--------------------------------------------------")
+		fmt.Println("💡 提示: 按 Enter (回车键) 退出当前窗口...")
+		var b [1]byte
+		_, _ = os.Stdin.Read(b[:])
+	}
+}
+
