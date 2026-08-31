@@ -139,11 +139,11 @@ make dev-frontend   # 终端 B: 启动前端热重载 (运行于 http://localhos
 # 3. 生产构建 (前端编译 + 单二进制内嵌打包)
 make                # 编译当前宿主机平台的二进制到 bin/adb-toolkit
 
-# 4. 交叉编译多平台发布包
-make build-darwin   # 编译 macOS arm64 + amd64
-make build-linux    # 编译 Linux amd64
-make build-windows  # 编译 Windows amd64 (.exe)
-make build-all      # 一键编译全平台包
+# 4. 交叉编译多平台发布包 (支持 VERSION=v1.0.0 或 V=v1.0.0)
+make build-darwin VERSION=v1.0.0   # 编译 macOS arm64 + amd64
+make build-linux VERSION=v1.0.0    # 编译 Linux amd64
+make build-windows VERSION=v1.0.0  # 编译 Windows amd64 (.exe)
+make build-all VERSION=v1.0.0      # 一键编译全平台包 (输出形如 adb-toolkit-v1.0.0-darwin-amd64)
 
 # 5. 清理构建缓存
 make clean          # 删除 bin/ 与 web/dist/

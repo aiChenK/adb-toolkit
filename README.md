@@ -93,18 +93,21 @@ make dev
 ```bash
 # 1. 编译当前平台单二进制文件 (输出至 bin/adb-toolkit)
 make
+# 也可指定版本号，输出至 bin/adb-toolkit-v1.0.0
+make build VERSION=v1.0.0
 
 # 2. 交叉编译 macOS (Apple Silicon + Intel)
-make build-darwin
+make build-darwin VERSION=v1.0.0
 
 # 3. 交叉编译 Linux (amd64)
-make build-linux
+make build-linux VERSION=v1.0.0
 
 # 4. 交叉编译 Windows (amd64)
-make build-windows
+make build-windows VERSION=v1.0.0
 
-# 5. 一键编译全平台发行包
-make build-all
+# 5. 一键编译全平台发行包 (生成带版本号的多平台二进制)
+make build-all VERSION=v1.0.0
+# 或简写为: make build-all V=v1.0.0
 ```
 
 编译完成后，只需将 `bin/` 下生成的单个可执行文件分发给使用者即可，双击直接运行！
