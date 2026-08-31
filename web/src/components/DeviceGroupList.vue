@@ -4,8 +4,26 @@
       <a-collapse-panel
         v-for="(item, index) in items"
         :key="String(index)"
-        :header="getPanelHeader(item)"
       >
+        <template #header>
+          <span class="panel-header-content">
+            <span class="panel-title">📱 {{ item.title }}</span>
+            <span v-if="item.commandForm.ip" class="panel-ip-tag">
+              ({{ item.commandForm.ip }}:{{ item.commandForm.port || '5555' }})
+            </span>
+          </span>
+        </template>
+        <template #extra>
+          <a-button
+            type="link"
+            size="small"
+            class="header-rename-btn"
+            @click.stop="$emit('rename-group', index)"
+          >
+            ✏️ 重命名
+          </a-button>
+        </template>
+
         <a-form
           :model="item.commandForm"
           layout="horizontal"
@@ -78,6 +96,11 @@
                 🧹 清理缓存
               </a-button>
               <a-button
+                @click="$emit('rename-group', index)"
+              >
+                ✏️ 重命名
+              </a-button>
+              <a-button
                 type="dashed"
                 danger
                 @click="$emit('remove-group', index)"
@@ -105,16 +128,10 @@ export default {
       default: () => ['0']
     }
   },
-  emits: ['update:activeKey', 'exec-op', 'remove-group'],
+  emits: ['update:activeKey', 'exec-op', 'rename-group', 'remove-group'],
   methods: {
     onCollapseChange(keys) {
       this.$emit('update:activeKey', keys);
-    },
-    getPanelHeader(item) {
-      const ip = item.commandForm.ip;
-      const port = item.commandForm.port || '5555';
-      const addrInfo = ip ? ` (${ip}:${port})` : '';
-      return `📱 ${item.title}${addrInfo}`;
     }
   }
 };
@@ -126,5 +143,27 @@ export default {
   border-radius: 8px;
   overflow: hidden;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.panel-header-content {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.panel-title {
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.panel-ip-tag {
+  color: #6b7280;
+  font-size: 13px;
+  font-weight: normal;
+}
+
+.header-rename-btn {
+  padding: 0 4px;
+  font-size: 13px;
 }
 </style>

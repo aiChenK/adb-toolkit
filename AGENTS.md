@@ -164,3 +164,10 @@ make clean          # 删除 bin/ 与 web/dist/
 4. **Git 与依赖管理**：
    - 严禁将大体积二进制文件、平台编译包或 node_modules 提交至 Git 仓库。
    - 所有新增环境忽略项应及时补充至 `.gitignore`。
+5. **版本发布与更新规范**：
+   - 当接收到诸如「发布版本 vx.x.x」、「更新版本 vx.x.x」等指令时，必须同步更新以下 3 个文件：
+     1. `CHANGELOG.md`：在顶部追加对应版本的更新日志（包含发布日期、Added / Changed / Fixed 等变更明细）；
+     2. `web/package.json`：更新前端工程的 `"version"` 字段（例如 `"1.0.1"`）；
+     3. `web/package-lock.json`：同步更新 root 包的 `"version"` 字段。
+   - 除非用户有明确要求，否则版本更新操作不执行 `git commit` 或 `git push`。
+

@@ -14,6 +14,10 @@
             <a-menu-item @click="$emit('clear-logs')">
               🧹 清空日志结果区
             </a-menu-item>
+            <a-menu-divider />
+            <a-menu-item @click="$emit('reset-groups')" danger>
+              🔄 重置设备组配置
+            </a-menu-item>
           </a-menu>
         </template>
       </a-dropdown-button>
@@ -67,7 +71,7 @@ export default {
       default: () => COMMAND_OPTIONS
     }
   },
-  emits: ['add-item', 'fill-ip', 'refresh-devices', 'clear-logs', 'exec-free', 'exec-direct'],
+  emits: ['add-item', 'fill-ip', 'refresh-devices', 'clear-logs', 'reset-groups', 'exec-free', 'exec-direct'],
   data() {
     return {
       selectedPreset: null,

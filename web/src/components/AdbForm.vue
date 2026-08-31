@@ -7,6 +7,7 @@
       @fill-ip="fillLocalIp"
       @refresh-devices="fetchConnectedDevices"
       @clear-logs="clearResultData"
+      @reset-groups="resetGroups"
       @exec-free="execFreeCommand"
       @exec-direct="execFreeCommandWithDevice"
     />
@@ -29,16 +30,22 @@
       :items="items"
       v-model:activeKey="activeKey"
       @exec-op="handleGroupOp"
+      @rename-group="renameGroup"
       @remove-group="removeGroup"
     />
   </div>
 </template>
 
 <script>
-import { message } from 'ant-design-vue';
+import { message, Modal } from 'ant-design-vue';
 import { execAdbCommand, fetchDevices } from '@/api/adb';
 import { fetchLocalIp } from '@/api/system';
 import { DEFAULT_COMMAND_FORM, MAX_GROUP_COUNT } from '@/constants/commands';
+import {
+  loadStoredDeviceGroups,
+  saveStoredDeviceGroups,
+  clearStoredDeviceGroups
+} from '@/utils/storage';
 import AdbToolbar from './AdbToolbar.vue';
 import DeviceTagBar from './DeviceTagBar.vue';
 import LogConsole from './LogConsole.vue';
@@ -53,9 +60,10 @@ export default {
     DeviceGroupList
   },
   data() {
+    const storedItems = loadStoredDeviceGroups();
     return {
       activeKey: ['0'],
-      items: [
+      items: storedItems || [
         {
           title: '设备 1',
           commandForm: { ...DEFAULT_COMMAND_FORM }
@@ -65,6 +73,14 @@ export default {
       resultData: [],
       onlineDevices: []
     };
+  },
+  watch: {
+    items: {
+      handler(newItems) {
+        saveStoredDeviceGroups(newItems);
+      },
+      deep: true
+    }
   },
   mounted() {
     this.fetchConnectedDevices();
@@ -206,6 +222,40 @@ export default {
     clearResultData() {
       this.resultData = [];
       message.info('日志结果区已清空');
+    },
+    renameGroup(index) {
+      if (!this.items[index]) return;
+      const currentTitle = this.items[index].title || `设备 ${index + 1}`;
+      const newTitle = prompt('请输入新的设备组名称', currentTitle);
+      if (newTitle !== null) {
+        const trimmed = newTitle.trim();
+        if (!trimmed) {
+          message.warning('设备组名称不能为空');
+          return;
+        }
+        this.items[index].title = trimmed;
+        message.success(`已重命名为: ${trimmed}`);
+      }
+    },
+    resetGroups() {
+      Modal.confirm({
+        title: '重置设备组配置',
+        content: '确定要清除本地保存的设备组配置并恢复为默认初始状态吗？',
+        okText: '确认重置',
+        okType: 'danger',
+        cancelText: '取消',
+        onOk: () => {
+          clearStoredDeviceGroups();
+          this.items = [
+            {
+              title: '设备 1',
+              commandForm: { ...DEFAULT_COMMAND_FORM }
+            }
+          ];
+          this.activeKey = ['0'];
+          message.success('设备组配置已恢复为默认状态');
+        }
+      });
     }
   }
 };
