@@ -130,11 +130,11 @@ adb-toolkit/
 # 1. 帮助查看
 make help
 
-# 2. 本地联调 (双进程开发)
-# 终端 A: 启动后端服务
-make dev-backend    # 运行于 http://localhost:8088
-# 终端 B: 启动前端热重载
-make dev-frontend   # 运行于 http://localhost:8080 (代理转发至 :8088)
+# 2. 本地联调
+make dev            # 一键同时启动前端与后端开发服务
+# 或分终端运行：
+make dev-backend    # 终端 A: 启动后端服务 (运行于 http://localhost:8088)
+make dev-frontend   # 终端 B: 启动前端热重载 (运行于 http://localhost:8080，代理转发至 :8088)
 
 # 3. 生产构建 (前端编译 + 单二进制内嵌打包)
 make                # 编译当前宿主机平台的二进制到 bin/adb-toolkit

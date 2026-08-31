@@ -9,6 +9,8 @@
 
 **ADB Toolkit** 是一个基于 **Go (Gin) + Vue 3 (Ant Design Vue)** 构建的轻量级、跨平台 Android 可视化调试工具箱。
 
+> 💡 **项目说明**：本项目由原前后端独立项目 [aiChenK/adb-service](https://github.com/aiChenK/adb-service)（后端服务）与 [aiChenK/adb-web](https://github.com/aiChenK/adb-web)（前端界面）合并重构而来，采用单二进制架构打包分发。
+
 通过现代化 Web 界面简化常用的 ADB 操作，支持多设备/客户端分组独立管理、已连接设备自动扫描、局域网抓包代理一键配置、应用进程/缓存清理与自由命令执行。内置静态资源打包机制，编译后仅为一个**绿色无依赖的单可执行文件**，启动后自动唤起浏览器使用。
 
 ---
@@ -62,19 +64,25 @@ adb-toolkit/
 
 ### 2. 本地开发与联调
 
-#### 启动后端服务：
+#### 方式一：一键同时启动前后端服务（推荐）
 ```bash
-make dev-backend
-# 或直接运行: go run .
+make dev
 ```
-后端服务默认监听 `http://localhost:8088`。支持参数自定义：`go run . -port=9000 -no-browser=true`。
+该命令会同时启动后端服务（端口 `8088`）与前端热重载服务（端口 `8080`），并在退出时自动终止前后端进程。
 
-#### 启动前端（热重载开发）：
-```bash
-make dev-frontend
-# 或进入 web 目录: cd web && npm run serve
-```
-前端默认运行在 `http://localhost:8080`，已配置代理转发至后端的 `:8088` 端口。
+#### 方式二：分别在不同终端启动
+- **启动后端服务**（默认监听 `http://localhost:8088`）：
+  ```bash
+  make dev-backend
+  # 或直接运行: go run .
+  ```
+  > 支持自定义参数，例如：`go run . -port=9000 -no-browser=true`。
+
+- **启动前端服务**（默认运行于 `http://localhost:8080`，已配置代理转发至 `:8088`）：
+  ```bash
+  make dev-frontend
+  # 或进入 web 目录: cd web && npm run serve
+  ```
 
 ---
 
@@ -105,10 +113,13 @@ make build-all
 
 ## 📝 更新日志
 
-### v1.1.0
-- 🧹 彻底移除废弃的 Docker 镜像配置与大文件残留，仓库显著瘦身。
-- 🛠️ 重构构建体系为现代 `Makefile`，支持全平台交叉编译（macOS arm64/amd64、Linux、Windows）。
-- ⚡ 增强 ADB 命令参数解析与 stderr 错误捕获，支持定向设备断开。
-- 🌐 优化跨平台局域网 IP 扫描算法，精准识别物理无线/有线网卡。
-- 🎨 升级 Web 控制台体验：新增在线设备检测与快速填充、多预置命令、单条日志一键复制。
-- 🤖 新增 `AGENTS.md` 规范化协作文档。
+### v1.0.0 (首个单二进制正式版)
+- 🚀 **全新架构**：基于 Go (Gin) + Vue 3 (Ant Design Vue) 的单二进制架构，静态资源内嵌打包，零依赖、双击运行、自动唤起浏览器。
+- 🧹 **仓库瘦身**：彻底移除废弃的 Docker 镜像配置与大文件残留，极大精简仓库体积。
+- 🛠️ **标准构建**：重构现代 `Makefile`，支持一键本地全栈开发与全平台交叉编译（macOS arm64/amd64、Linux、Windows）。
+- ⚡ **执行与健壮性**：增强 ADB 命令切片参数解析与 stderr 错误捕获，支持定向设备断开。
+- 🌐 **网络工具升级**：优化跨平台（macOS / Linux / Windows）局域网物理 IPv4 智能识别算法。
+- 🎨 **Web 控制台体验**：新增在线设备自动扫描与卡片填充、常用预置命令选择、色彩化日志流与单条日志一键复制。
+- 🤖 **协作规范**：新增 `AGENTS.md` 规范化开发者与 AI 协作文档。
+
+> 📖 查看完整版本变更历史与详细说明，请参阅 [CHANGELOG.md](./CHANGELOG.md)。

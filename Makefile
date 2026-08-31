@@ -5,7 +5,7 @@ BIN_DIR := bin
 WEB_DIR := web
 LDFLAGS := -s -w
 
-.PHONY: help all build build-web build-app build-darwin build-darwin-arm64 build-darwin-amd64 build-linux build-windows build-all run-backend run-frontend dev-backend dev-frontend clean test
+.PHONY: help all build build-web build-app build-darwin build-darwin-arm64 build-darwin-amd64 build-linux build-windows build-all run-backend run-frontend dev dev-backend dev-frontend clean test
 
 # Default target
 all: build
@@ -16,6 +16,9 @@ help: ## 显示帮助信息
 	@echo "用法: make [目标]"
 	@echo ""
 	@echo "常用目标:"
+	@echo "  make dev               - 一键同时启动前端与后端开发服务"
+	@echo "  make dev-backend       - 本地运行后端服务 (端口 8088)"
+	@echo "  make dev-frontend      - 本地启动前端开发热重载服务 (端口 8080)"
 	@echo "  make build             - 构建前端静态资源并编译当前平台的单二进制文件"
 	@echo "  make build-web         - 仅构建前端静态产物 (web/dist)"
 	@echo "  make build-app         - 仅编译当前平台的 Go 二进制文件"
@@ -23,8 +26,6 @@ help: ## 显示帮助信息
 	@echo "  make build-linux       - 交叉编译 Linux (amd64) 二进制文件"
 	@echo "  make build-windows     - 交叉编译 Windows (amd64) 可执行文件"
 	@echo "  make build-all         - 一键构建多平台发行包 (macOS, Linux, Windows)"
-	@echo "  make dev-backend       - 本地运行后端服务 (端口 8088)"
-	@echo "  make dev-frontend      - 本地启动前端开发热重载服务 (端口 8080)"
 	@echo "  make clean             - 清理构建产物 (bin/ 及 web/dist/)"
 	@echo "  make test              - 运行后端单元测试"
 	@echo ""
@@ -71,6 +72,13 @@ build-all: build-web ## 一键交叉编译多平台版本
 	@GOOS=linux GOARCH=amd64 go build -ldflags="$(LDFLAGS)" -o $(BIN_DIR)/$(APP_NAME)-linux-amd64 .
 	@GOOS=windows GOARCH=amd64 go build -ldflags="$(LDFLAGS)" -o $(BIN_DIR)/$(APP_NAME)-windows-amd64.exe .
 	@echo "🎉 全平台构建成功！产物位于 $(BIN_DIR)/"
+
+dev: ## 同时启动前后端开发服务
+	@echo "🚀 正在同时启动前端与后端开发服务..."
+	@trap 'kill 0' SIGINT SIGTERM EXIT; \
+	go run . & \
+	(cd $(WEB_DIR) && npm run serve) & \
+	wait
 
 dev-backend: ## 运行后端 (开发环境)
 	@echo "🚀 启动后端开发服务..."
