@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"fmt"
 	"os/exec"
+	"regexp"
 	"strings"
 )
 
@@ -42,6 +43,19 @@ func Exec(commandForm request.CommandForm) (output string, err error) {
 	case "stop":
 		needConnectDevice = true
 		args = []string{"-s", targetAddr, "shell", "am", "force-stop", commandForm.PackageName}
+	case "getPackage":
+		if targetAddr == "" {
+			return "设备 IP 不能为空", fmt.Errorf("设备 IP 不能为空")
+		}
+		if connErr := deviceConnect(targetAddr, false); connErr != nil {
+			return fmt.Sprintf("连接设备 %s 失败: %v", targetAddr, connErr), connErr
+		}
+		pkgName, pkgErr := getActivePackage(targetAddr)
+		if pkgErr != nil {
+			return pkgErr.Error(), pkgErr
+		}
+		fmt.Printf("📱 获取设备 [%s] 当前运行包名: %s\n", targetAddr, pkgName)
+		return pkgName, nil
 	default:
 		// 自由命令处理
 		trimmedCmd := strings.TrimSpace(commandForm.Cmd)
@@ -189,4 +203,36 @@ func deviceConnect(targetAddr string, isRetry bool) error {
 	}
 
 	return nil
+}
+
+// extractPackageName 从 dumpsys 输出中提取前台应用包名
+func extractPackageName(output string) string {
+	pkgRegex := regexp.MustCompile(`([a-zA-Z][a-zA-Z0-9_]*(?:\.[a-zA-Z0-9_]+)+)/`)
+	if match := pkgRegex.FindStringSubmatch(output); len(match) > 1 {
+		return match[1]
+	}
+	return ""
+}
+
+// getActivePackage 获取设备当前运行的前台包名 (跨 Android 版本与主流模拟器兼容)
+func getActivePackage(targetAddr string) (string, error) {
+	// 策略 1: dumpsys window (优先获取当前窗口焦点，适用于大多数原生系统与高版本 Android)
+	out, _ := exec.Command("adb", "-s", targetAddr, "shell", "dumpsys window | grep -E 'mCurrentFocus|mFocusedApp'").CombinedOutput()
+	if pkg := extractPackageName(string(out)); pkg != "" {
+		return pkg, nil
+	}
+
+	// 策略 2: dumpsys activity activities (兼容 MuMu、雷电等模拟器以及部分定制 ROM)
+	out, _ = exec.Command("adb", "-s", targetAddr, "shell", "dumpsys activity activities | grep -E 'mResumedActivity|topResumedActivity|ResumedActivity'").CombinedOutput()
+	if pkg := extractPackageName(string(out)); pkg != "" {
+		return pkg, nil
+	}
+
+	// 策略 3: dumpsys activity top (备用后备方案)
+	out, _ = exec.Command("adb", "-s", targetAddr, "shell", "dumpsys activity top").CombinedOutput()
+	if pkg := extractPackageName(string(out)); pkg != "" {
+		return pkg, nil
+	}
+
+	return "", fmt.Errorf("未检测到当前正在运行的应用包名（请确认屏幕已解锁且应用处于前台）")
 }

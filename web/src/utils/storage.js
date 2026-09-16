@@ -51,7 +51,11 @@ export function saveStoredDeviceGroups(items) {
     if (!Array.isArray(items)) {
       return;
     }
-    localStorage.setItem(STORAGE_KEY_DEVICE_GROUPS, JSON.stringify(items));
+    const cleanItems = items.map(item => ({
+      title: item.title,
+      commandForm: item.commandForm
+    }));
+    localStorage.setItem(STORAGE_KEY_DEVICE_GROUPS, JSON.stringify(cleanItems));
   } catch (err) {
     console.warn('[Storage] 保存设备分组缓存失败:', err);
   }

@@ -32,6 +32,7 @@
       @exec-op="handleGroupOp"
       @rename-group="renameGroup"
       @remove-group="removeGroup"
+      @fetch-package="handleFetchPackage"
     />
   </div>
 </template>
@@ -157,6 +158,56 @@ export default {
     },
     handleGroupOp({ commandForm, op, title }) {
       this.sendHttpRequest(commandForm, op, title);
+    },
+    handleFetchPackage({ item }) {
+      if (!item.commandForm.ip) {
+        message.warning('请先输入设备 IP');
+        return;
+      }
+      item._loadingPackage = true;
+      const formPayload = { ...item.commandForm, op: 'getPackage' };
+      const currentTime = this.formatTime();
+      const showTitle = `获取当前包名 [${item.title}]`;
+
+      execAdbCommand(formPayload)
+        .then(res => {
+          const responseData = res.data;
+          if (responseData && responseData.success && responseData.data) {
+            item.commandForm.packageName = responseData.data;
+            this.resultData.unshift({
+              time: currentTime,
+              title: showTitle,
+              color: 'green',
+              data: `获取成功: ${responseData.data}`
+            });
+            message.success(`已填充当前运行包名: ${responseData.data}`);
+          } else {
+            const err = (responseData && responseData.errMessage) || '未能检测到当前运行包名';
+            this.resultData.unshift({
+              time: currentTime,
+              title: showTitle,
+              color: 'red',
+              data: err
+            });
+            message.error(err);
+          }
+          if (this.resultData.length > 50) {
+            this.resultData.pop();
+          }
+        })
+        .catch(errMsg => {
+          const err = typeof errMsg === 'string' ? errMsg : JSON.stringify(errMsg);
+          this.resultData.unshift({
+            time: currentTime,
+            title: showTitle,
+            color: 'red',
+            data: err
+          });
+          message.error(`获取包名失败: ${err}`);
+        })
+        .finally(() => {
+          item._loadingPackage = false;
+        });
     },
     dealShowCommandInfo(commandForm, title) {
       let showCmd = commandForm.cmd;

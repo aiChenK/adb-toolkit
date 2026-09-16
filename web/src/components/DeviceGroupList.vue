@@ -52,9 +52,12 @@
           <a-row :gutter="16">
             <a-col :span="14">
               <a-form-item label="应用包名">
-                <a-input
+                <a-input-search
                   v-model:value="item.commandForm.packageName"
                   placeholder="例如: com.example.app"
+                  enter-button="查看"
+                  :loading="item._loadingPackage"
+                  @search="$emit('fetch-package', { item, index })"
                 />
               </a-form-item>
             </a-col>
@@ -128,7 +131,7 @@ export default {
       default: () => ['0']
     }
   },
-  emits: ['update:activeKey', 'exec-op', 'rename-group', 'remove-group'],
+  emits: ['update:activeKey', 'exec-op', 'rename-group', 'remove-group', 'fetch-package'],
   methods: {
     onCollapseChange(keys) {
       this.$emit('update:activeKey', keys);
