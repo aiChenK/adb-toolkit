@@ -1,0 +1,67 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    name: Build and Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: web/package-lock.json
+
+      - name: Build Frontend
+        working-directory: web
+        run: |
+          npm ci
+          npm run build
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.23'
+          cache: true
+
+      - name: Build Cross-Platform Binaries
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/}
+          LDFLAGS="-s -w"
+          
+          mkdir -p release-dist
+          
+          # Windows
+          CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -trimpath -ldflags "$LDFLAGS" -o release-dist/adb-toolkit-${VERSION}-windows-amd64.exe .
+          CGO_ENABLED=0 GOOS=windows GOARCH=arm64 go build -trimpath -ldflags "$LDFLAGS" -o release-dist/adb-toolkit-${VERSION}-windows-arm64.exe .
+          
+          # Linux
+          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -ldflags "$LDFLAGS" -o release-dist/adb-toolkit-${VERSION}-linux-amd64 .
+          CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -trimpath -ldflags "$LDFLAGS" -o release-dist/adb-toolkit-${VERSION}-linux-arm64 .
+          
+          # macOS
+          CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build -trimpath -ldflags "$LDFLAGS" -o release-dist/adb-toolkit-${VERSION}-darwin-amd64 .
+          CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 go build -trimpath -ldflags "$LDFLAGS" -o release-dist/adb-toolkit-${VERSION}-darwin-arm64 .
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          files: release-dist/*
+          draft: false
+          prerelease: false
+          generate_release_notes: true

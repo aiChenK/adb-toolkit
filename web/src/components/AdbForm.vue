@@ -3,11 +3,14 @@
     <!-- 顶部操作栏 -->
     <AdbToolbar
       :items="items"
+      :online-devices="onlineDevices"
+      v-model:target="toolbarTarget"
       @add-item="addItem"
       @fill-ip="fillLocalIp"
       @refresh-devices="fetchConnectedDevices"
       @clear-logs="clearResultData"
       @reset-groups="resetGroups"
+      @exec-command="handleExecCommand"
       @exec-free="execFreeCommand"
       @exec-direct="execFreeCommandWithDevice"
     />
@@ -72,7 +75,8 @@ export default {
       ],
       spinning: false,
       resultData: [],
-      onlineDevices: []
+      onlineDevices: [],
+      toolbarTarget: ''
     };
   },
   watch: {
@@ -110,7 +114,8 @@ export default {
         } else {
           this.items[activeIdx].commandForm.ip = dev.id;
         }
-        message.success(`已将设备 ${dev.id} 填充至分组 [${this.items[activeIdx].title}]`);
+        this.toolbarTarget = `dev:${dev.id}`;
+        message.success(`已将设备 ${dev.id} 填充至分组 [${this.items[activeIdx].title}] 并设为顶部目标`);
       }
     },
     sendHttpRequest(commandForm, op, title) {
@@ -240,6 +245,9 @@ export default {
       }
       this.items.splice(index, 1);
       this.activeKey = ['0'];
+    },
+    handleExecCommand({ cmd, targetLabel }) {
+      this.sendHttpRequest({ cmd }, 'free', targetLabel);
     },
     execFreeCommand(cmd) {
       this.sendHttpRequest({ cmd }, 'free');
